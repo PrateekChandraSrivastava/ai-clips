@@ -11,7 +11,7 @@ A=/workspace/assets
 
 echo "=== 1/8 Folders ==="
 mkdir -p /workspace/clips /workspace/models /workspace/hf /workspace/bin /workspace/scripts \
-         $A/fonts $A/models $A/emoji
+         $A/fonts $A/models $A/emoji $A/music $A/sfx
 
 echo "=== 2/8 System tools (ffmpeg, colour emoji font) ==="
 NEED_APT=""
@@ -72,5 +72,6 @@ else
   echo "GPU video encoding (NVENC): no - will use CPU encoding (slower, same quality)"
 fi
 if [ -f /workspace/bin/yt-cookies.txt ]; then echo "YouTube cookies: found"; else echo "YouTube cookies: MISSING - send yt-cookies.txt to /workspace/bin/"; fi
+echo "Music tracks: $(ls $A/music 2>/dev/null | grep -ciE '\.(mp3|m4a|wav|ogg|aac|flac)$') (send them to /workspace/assets/music/, 0 = no music)"
 df -h /workspace | tail -1
 echo "SETUP DONE"
