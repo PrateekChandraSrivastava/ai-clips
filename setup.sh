@@ -57,7 +57,7 @@ echo "  font: $(stat -c%s $A/fonts/Montserrat-Black.ttf) bytes, face model: $(st
 
 echo "=== 8/8 Workflow scripts (always refreshed to the latest version) ==="
 BASE=https://prateekchandrasrivastava.github.io/ai-clips
-for f in transcribe.py render_clip.py; do
+for f in transcribe.py render_clip.py render_all.py; do
   curl -fsSL "$BASE/$f?v=$(date +%s)" -o "/workspace/scripts/$f"
   echo "  got $f"
 done
