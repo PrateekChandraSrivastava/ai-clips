@@ -18,14 +18,14 @@ NEED_APT=""
 command -v ffmpeg >/dev/null 2>&1 || NEED_APT="$NEED_APT ffmpeg"
 [ -f /usr/share/fonts/truetype/noto/NotoColorEmoji.ttf ] || NEED_APT="$NEED_APT fonts-noto-color-emoji"
 if [ -n "$NEED_APT" ]; then
-  apt-get update -y -qq && DEBIAN_FRONTEND=noninteractive apt-get install -y -qq $NEED_APT
+  apt-get update -y -qq </dev/null && DEBIAN_FRONTEND=noninteractive apt-get install -y -qq $NEED_APT </dev/null
 fi
-ffmpeg -version | head -1
+ffmpeg -nostdin -version </dev/null | head -1
 
 echo "=== 3/8 Python packages ==="
-$PIP install -q --root-user-action=ignore -U faster-whisper "yt-dlp[default]" pillow
+$PIP install -q --root-user-action=ignore -U faster-whisper "yt-dlp[default]" pillow </dev/null
 if ! $PY -c "import cv2; cv2.FaceDetectorYN" >/dev/null 2>&1; then
-  $PIP install -q --root-user-action=ignore opencv-python-headless
+  $PIP install -q --root-user-action=ignore opencv-python-headless </dev/null
 fi
 $PY -c "import cv2; print('opencv', cv2.__version__)"
 
@@ -66,7 +66,7 @@ echo ""
 echo "=== CHECK ==="
 nvidia-smi --query-gpu=name,memory.total --format=csv,noheader
 echo "yt-dlp $(/venv/main/bin/yt-dlp --version)"
-if ffmpeg -v error -f lavfi -i color=black:s=320x320:d=0.2 -c:v h264_nvenc -f null - >/dev/null 2>&1; then
+if ffmpeg -nostdin -v error -f lavfi -i color=black:s=320x320:d=0.2 -c:v h264_nvenc -f null - </dev/null >/dev/null 2>&1; then
   echo "GPU video encoding (NVENC): yes"
 else
   echo "GPU video encoding (NVENC): no - will use CPU encoding (slower, same quality)"

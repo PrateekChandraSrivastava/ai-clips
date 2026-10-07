@@ -42,7 +42,7 @@ GREEN = "&H0055FF55&"
 
 # ----------------------------------------------------------------- helpers
 def run(cmd):
-    return subprocess.run(cmd, check=True, capture_output=True, text=True)
+    return subprocess.run(cmd, check=True, capture_output=True, text=True, stdin=subprocess.DEVNULL)
 
 
 def probe(path):
@@ -66,13 +66,13 @@ def pick_font():
 
 def pick_encoder():
     try:
-        run(["ffmpeg", "-v", "error", "-f", "lavfi", "-i", "color=black:s=320x320:d=0.2",
+        run(["ffmpeg", "-nostdin", "-v", "error", "-f", "lavfi", "-i", "color=black:s=320x320:d=0.2",
              "-c:v", "h264_nvenc", "-f", "null", "-"])
         return "h264_nvenc", ["-c:v", "h264_nvenc", "-preset", "p6", "-tune", "hq", "-rc", "vbr",
                               "-cq", "19", "-b:v", "0", "-maxrate", "25M", "-bufsize", "50M",
                               "-profile:v", "high"]
     except subprocess.CalledProcessError:
-        return "libx264", ["-c:v", "libx264", "-preset", "medium", "-crf", "18", "-profile:v", "high"]
+        return "libx264", ["-c:v", "libx264", "-preset", "fast", "-crf", "18", "-profile:v", "high", "-threads", "0"]
 
 
 def ass_time(t):
@@ -169,9 +169,9 @@ def detect_faces(video, t0, dur, fps, sw, sh):
     det_w = 640
     det_h = int(round(sh * det_w / sw / 2) * 2)
     step = max(1, int(round(fps / 6)))           # ~6 checks per second
-    cmd = ["ffmpeg", "-v", "error", "-ss", f"{t0:.3f}", "-i", video, "-t", f"{dur:.3f}",
+    cmd = ["ffmpeg", "-nostdin", "-v", "error", "-ss", f"{t0:.3f}", "-i", video, "-t", f"{dur:.3f}",
            "-vf", f"fps={fps:.4f},scale={det_w}:{det_h}", "-f", "rawvideo", "-pix_fmt", "bgr24", "-"]
-    p = subprocess.Popen(cmd, stdout=subprocess.PIPE)
+    p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stdin=subprocess.DEVNULL)
     det = cv2.FaceDetectorYN.create(YUNET, "", (det_w, det_h), 0.6, 0.3, 50)
     fsize = det_w * det_h * 3
     scale = sw / det_w
@@ -414,9 +414,9 @@ def main():
             pass
 
     enc_name, enc_args = pick_encoder()
-    dec = subprocess.Popen(["ffmpeg", "-v", "error", "-ss", f"{t0:.3f}", "-i", video, "-t", f"{dur:.3f}",
+    dec = subprocess.Popen(["ffmpeg", "-nostdin", "-v", "error", "-ss", f"{t0:.3f}", "-i", video, "-t", f"{dur:.3f}",
                             "-vf", f"fps={fps:.4f}", "-f", "rawvideo", "-pix_fmt", "bgr24", "-"],
-                           stdout=subprocess.PIPE)
+                           stdout=subprocess.PIPE, stdin=subprocess.DEVNULL)
     enc = subprocess.Popen(["ffmpeg", "-y", "-v", "error",
                             "-f", "rawvideo", "-pix_fmt", "bgr24", "-s", f"{OUT_W}x{OUT_H}",
                             "-r", f"{fps:.4f}", "-i", "-",
